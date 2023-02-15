@@ -45,7 +45,13 @@
                   [
                     entr
                     nodejs
-                    (ps.command { })
+                    (ps.command {
+                      bundle = {
+                        esbuild = {
+                          outfile = "public/bundle.js";
+                        };
+                      };
+                    })
                     ps-tools.for-0_15.purescript-language-server
                     purs-nix.esbuild
                     purs-nix.purescript
@@ -53,7 +59,8 @@
 
                 shellHook =
                   ''
-                    alias watch="find src | entr -s 'echo bundling; purs-nix bundle'"
+                    zsh
+                    alias watch_proj="find src | entr -s 'echo bundling; purs-nix bundle'"
                   '';
               };
         }
