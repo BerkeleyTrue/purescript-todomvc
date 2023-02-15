@@ -49,6 +49,7 @@
                       bundle = {
                         esbuild = {
                           outfile = "public/bundle.js";
+                          servedir = "public";
                         };
                       };
                     })
@@ -57,10 +58,8 @@
                     purs-nix.purescript
                   ];
 
-                shellHook =
-                  ''
+                shellHook = ''
                     zsh
-                    alias watch_proj="find src | entr -s 'echo bundling; purs-nix bundle'"
                   '';
               };
         }
