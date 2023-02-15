@@ -61,7 +61,8 @@
                   ];
 
                 shellHook = ''
-                  zsh && exit 0
+                  zsh
+                  exit 0
                 '';
               };
         }
