@@ -19,7 +19,9 @@
             inherit system;
           };
           ps-tools = inputs.ps-tools.legacyPackages.${system};
-          purs-nix = inputs.purs-nix { inherit system; };
+          purs-nix = inputs.purs-nix {
+            inherit system;
+          };
           ps =
             purs-nix.purs
               {
@@ -48,8 +50,7 @@
                     (ps.command {
                       bundle = {
                         esbuild = {
-                          outfile = "public/bundle.js";
-                          servedir = "public";
+                          outfile = "./public/bundle.js";
                         };
                       };
                     })
@@ -59,8 +60,8 @@
                   ];
 
                 shellHook = ''
-                    zsh
-                  '';
+                  zsh && exit 0
+                '';
               };
         }
       );
