@@ -3,12 +3,14 @@ module Main where
 import Prelude
 
 import Effect (Effect)
+import Effect.Class (class MonadEffect)
 import Halogen as H
 import Halogen.Aff as HA
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.VDom.Driver (runUI)
 
+component :: forall q m. MonadEffect m => H.Component q Unit Unit m
 component = H.mkComponent
   { initialState: const unit
   , render
