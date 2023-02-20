@@ -3,6 +3,8 @@ module Components.TodoList (todoList) where
 import Prelude
 
 import Components.TodoItem (todoItem)
+import Data.List (filter, length)
+import Data.Map (values)
 import Data.Tuple.Nested ((/\))
 import Effect.Class (class MonadEffect)
 import Halogen (Component)
@@ -15,6 +17,8 @@ import Store (Action(..), useStore)
 todoList :: forall query input output m. MonadEffect m => Component query input output m
 todoList = Hooks.component \_ _ -> Hooks.do
   filter' /\ ctx <- useStore \s -> s.filter
+  (_ /\ byId) /\ _ <- useStore \s -> (s.todos /\ s.todosById)
+  let left = length $ filter (not <<< _.completed) $ values byId
 
   Hooks.pure do
     HH.div [ HP.classes [ HH.ClassName "todoapp" ] ]
@@ -34,7 +38,7 @@ todoList = Hooks.component \_ _ -> Hooks.do
 
       , HH.footer [ HP.classes [ HH.ClassName "footer" ] ]
           [ HH.span [ HP.classes [ HH.ClassName "todo-count" ] ]
-              [ HH.strong [] [ HH.text "0" ]
+              [ HH.strong [] [ HH.text (show left) ]
               , HH.text " items left"
               ]
           , HH.ul [ HP.classes [ HH.ClassName "filters" ] ]
@@ -52,14 +56,16 @@ todoList = Hooks.component \_ _ -> Hooks.do
                       , HP.class_ (HH.ClassName if filter' == "active" then "selected" else "")
                       , HE.onClick \_ -> ctx.dispatch $ SetFilter "active"
                       ]
-                      [ HH.text "Active" ] ]
+                      [ HH.text "Active" ]
+                  ]
               , HH.li []
                   [ HH.a
                       [ HP.href "#/completed"
                       , HP.class_ (HH.ClassName if filter' == "completed" then "selected" else "")
                       , HE.onClick \_ -> ctx.dispatch $ SetFilter "completed"
                       ]
-                      [ HH.text "Completed" ] ]
+                      [ HH.text "Completed" ]
+                  ]
               ]
           , HH.button [ HP.classes [ HH.ClassName "clear-completed" ] ]
               [ HH.text "Clear completed" ]
