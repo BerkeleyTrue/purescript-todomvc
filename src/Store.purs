@@ -24,10 +24,11 @@ type Store =
 
 data Action
   = AddTodo String
+  | UpdateTodo Int String
   | CompleteTodo Int
   | ToggleTodo Int
-  | SetFilter String
   | DeleteTodo Int
+  | SetFilter String
 
 getId :: Store -> Int
 getId store = store.currentId
@@ -42,6 +43,10 @@ reducer store = case _ of
       }
     where
     newId = getId store
+
+  UpdateTodo id title ->
+    store
+      { todosById = update (\todo -> Just todo { title = title }) id store.todosById }
 
   DeleteTodo id ->
     store
