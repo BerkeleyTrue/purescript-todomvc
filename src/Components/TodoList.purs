@@ -39,8 +39,8 @@ todoList = Hooks.component \_ _ -> Hooks.do
           , HH.ul
               [ HP.classes [ HH.ClassName "todo-list" ] ]
               $ mapWithIndex
-                (\idx todoId -> HH.slot_ _todoItem idx todoItem { todoId: todoId })
-                todos
+                  (\idx todoId -> HH.slot_ _todoItem idx todoItem { todoId: todoId })
+                  todos
 
           ]
 
