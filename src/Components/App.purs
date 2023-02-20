@@ -1,13 +1,17 @@
 module Components.App (app) where
 
+import Prelude
+
 import Components.Footer (footer)
 import Components.TodoList (todoList)
 import Effect.Class (class MonadEffect)
 import Halogen as H
 import Halogen.HTML as HH
-import Prelude
+import Type.Proxy (Proxy(..))
 
-app :: forall q m. MonadEffect m => H.Component q Unit Unit m
+_todoList = Proxy :: Proxy "todoList"
+
+app :: forall query input output m. MonadEffect m => H.Component query input output m
 app = H.mkComponent
   { initialState: const unit
   , render
@@ -17,6 +21,6 @@ app = H.mkComponent
   handleAction _ = pure unit
   render _ =
     HH.div_
-      [ todoList
+      [ HH.slot_ _todoList unit todoList unit
       , footer
       ]

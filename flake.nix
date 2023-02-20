@@ -9,11 +9,6 @@
     purs-nix.url = "github:purs-nix/purs-nix/ps-0.15";
 
     utils.url = "github:numtide/flake-utils";
-
-    npmlock2nix = {
-      flake = false;
-      url = "github:nix-community/npmlock2nix";
-    };
   };
 
   outputs = { nixpkgs, utils, ... }@inputs:
@@ -24,18 +19,6 @@
             inherit system;
           };
 
-          mergeShells = envs: pkgs.mkShell (builtins.foldl'
-            (a: v: {
-              buildInputs = a.buildInputs ++ v.buildInputs;
-              nativeBuildInputs = a.nativeBuildInputs ++ v.nativeBuildInputs;
-              propagatedBuildInputs = a.propagatedBuildInputs ++ v.propagatedBuildInputs;
-              propagatedNativeBuildInputs = a.propagatedNativeBuildInputs ++ v.propagatedNativeBuildInputs;
-              shellHook = a.shellHook + "\n" + v.shellHook;
-            })
-            (pkgs.mkShell { })
-            envs);
-
-          npmlock2nix = import inputs.npmlock2nix { inherit pkgs; };
           ps-tools = inputs.ps-tools.legacyPackages.${system};
           purs-nix = inputs.purs-nix {
             inherit system;
@@ -50,6 +33,8 @@
                     effect
                     prelude
                     halogen
+                    halogen-hooks
+                    halogen-helix
                   ];
 
                 dir = ./.;
@@ -79,14 +64,11 @@
                 exit 0
               '';
             };
-          nodeShell = npmlock2nix.v2.shell {
-            src = ./.;
-          };
         in
         {
           packages.default = ps.bundle { };
           formatter = pkgs.nixpkgs-fmt;
-          devShells.default = mergeShells [ pursShell nodeShell ];
+          devShells.default = pursShell;
 
         });
 }
