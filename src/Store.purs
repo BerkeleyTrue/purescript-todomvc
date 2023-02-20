@@ -1,9 +1,11 @@
 module Store where
 
 import Prelude
+
 import Data.Array (filter, snoc)
-import Data.Map (Map, singleton, union, update)
+import Data.Map (Map, fromFoldable, singleton, union, update)
 import Data.Maybe (Maybe(..))
+import Data.Tuple (Tuple(..))
 import Effect.Class (class MonadEffect)
 import Halogen.Helix (UseHelixHook, makeStore')
 
@@ -66,8 +68,11 @@ createUseStore = makeStore' "todos" reducer
 initStore :: Store
 initStore =
   { currentId: 1
-  , todos: [ 1 ]
-  , todosById: singleton 1 { id: 1, title: "Hello", completed: false }
+  , todos: [ 1, 2 ]
+  , todosById: fromFoldable
+      [ (Tuple 1 { id: 1, title: "Learn Halogen", completed: true })
+      , (Tuple 2 { id: 2, title: "Learn Halogen Hooks", completed: false })
+      ]
   , filter: ""
   }
 

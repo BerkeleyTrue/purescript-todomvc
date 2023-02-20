@@ -3,6 +3,7 @@ module Components.TodoList (todoList) where
 import Prelude
 
 import Components.TodoItem (todoItem)
+import Data.FunctorWithIndex (mapWithIndex)
 import Data.List (filter, length)
 import Data.Map (values)
 import Data.Tuple.Nested ((/\))
@@ -13,11 +14,14 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.Hooks as Hooks
 import Store (Action(..), useStore)
+import Type.Proxy (Proxy(..))
+
+_todoItem = Proxy :: Proxy "todoItem"
 
 todoList :: forall query input output m. MonadEffect m => Component query input output m
 todoList = Hooks.component \_ _ -> Hooks.do
   filter' /\ ctx <- useStore \s -> s.filter
-  (_ /\ byId) /\ _ <- useStore \s -> (s.todos /\ s.todosById)
+  (todos /\ byId) /\ _ <- useStore \s -> (s.todos /\ s.todosById)
   let left = length $ filter (not <<< _.completed) $ values byId
 
   Hooks.pure do
@@ -32,8 +36,12 @@ todoList = Hooks.component \_ _ -> Hooks.do
               , HP.type_ HP.InputCheckbox
               , HP.checked true
               ]
-          , HH.ul [ HP.classes [ HH.ClassName "todo-list" ] ]
-              [ todoItem ]
+          , HH.ul
+              [ HP.classes [ HH.ClassName "todo-list" ] ]
+              $ mapWithIndex
+                (\idx todoId -> HH.slot_ _todoItem idx todoItem { todoId: todoId })
+                todos
+
           ]
 
       , HH.footer [ HP.classes [ HH.ClassName "footer" ] ]
