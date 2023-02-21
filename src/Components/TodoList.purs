@@ -4,7 +4,7 @@ import Prelude
 
 import Components.TodoItem (todoItem)
 import Data.FunctorWithIndex (mapWithIndex)
-import Data.List (filter, length)
+import Data.List (all, filter, length)
 import Data.Map (values)
 import Data.Tuple.Nested ((/\))
 import Effect.Class (class MonadEffect)
@@ -13,7 +13,7 @@ import Halogen (Component, liftEffect)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Halogen.Hooks (useState)
+import Halogen.Hooks (useMemo, useState)
 import Halogen.Hooks as Hooks
 import Store (Action(..), useStore)
 import Type.Proxy (Proxy(..))
@@ -42,6 +42,8 @@ todoList = Hooks.component \_ _ -> Hooks.do
           else pure unit
       _ -> pure unit
 
+  isAllSelected <- useIsAllSelected byId
+
   Hooks.pure do
     HH.div [ HP.classes [ HH.ClassName "todoapp" ] ]
       [ HH.header [ HP.classes [ HH.ClassName "header" ] ]
@@ -60,8 +62,9 @@ todoList = Hooks.component \_ _ -> Hooks.do
           [ HH.input
               [ HP.classes [ HH.ClassName "toggle-all" ]
               , HP.type_ HP.InputCheckbox
-              , HP.checked true
+              , HP.checked isAllSelected
               ]
+          , HH.label [ HP.for "toggle-all" ] []
           , HH.ul
               [ HP.classes [ HH.ClassName "todo-list" ] ]
               $ mapWithIndex
@@ -105,3 +108,5 @@ todoList = Hooks.component \_ _ -> Hooks.do
               [ HH.text "Clear completed" ]
           ]
       ]
+  where
+  useIsAllSelected byId = Hooks.captures { byId } $ flip useMemo (\_ -> all (\todo -> todo.completed) $ values byId)
