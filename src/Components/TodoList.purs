@@ -8,26 +8,52 @@ import Data.List (filter, length)
 import Data.Map (values)
 import Data.Tuple.Nested ((/\))
 import Effect.Class (class MonadEffect)
-import Halogen (Component)
+import Effect.Class.Console (log)
+import Halogen (Component, liftEffect)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Halogen.Hooks (useState)
 import Halogen.Hooks as Hooks
 import Store (Action(..), useStore)
 import Type.Proxy (Proxy(..))
+import Web.Event.Event (preventDefault)
+import Web.UIEvent.KeyboardEvent (code, toEvent)
 
 _todoItem = Proxy :: Proxy "todoItem"
 
 todoList :: forall query input output m. MonadEffect m => Component query input output m
 todoList = Hooks.component \_ _ -> Hooks.do
+  newVal /\ newValId <- useState ""
   filter' /\ ctx <- useStore \s -> s.filter
   (todos /\ byId) /\ _ <- useStore \s -> (s.todos /\ s.todosById)
-  let left = length $ filter (not <<< _.completed) $ values byId
+  let
+    left = length $ filter (not <<< _.completed) $ values byId
+    onNewValChange = \val -> Hooks.modify_ newValId (const val)
+    onAddNewTodo ev = case code ev of
+      "Enter" ->
+        do
+          liftEffect $ preventDefault $ toEvent ev
+          if
+            newVal /= "" then do
+            log $ "Adding new todo: " <> newVal
+            ctx.dispatch $ AddTodo newVal
+            Hooks.modify_ newValId (const "")
+          else pure unit
+      _ -> pure unit
 
   Hooks.pure do
     HH.div [ HP.classes [ HH.ClassName "todoapp" ] ]
       [ HH.header [ HP.classes [ HH.ClassName "header" ] ]
-          [ HH.h1 [] [ HH.text "todos" ] ]
+          [ HH.h1 [] [ HH.text "todos" ]
+          , HH.input
+              [ HP.classes [ HH.ClassName "new-todo" ]
+              , HP.placeholder "What needs to be done?"
+              , HE.onValueInput onNewValChange
+              , HE.onKeyDown onAddNewTodo
+              , HP.value newVal
+              ]
+          ]
 
       , HH.section
           [ HP.classes [ HH.ClassName "main" ] ]

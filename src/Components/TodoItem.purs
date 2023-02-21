@@ -26,7 +26,7 @@ todoItem :: forall query output m. MonadEffect m => Component query TodoInput ou
 todoItem = Hooks.component \_ input -> Hooks.do
   isEditing /\ isEditingId <- Hooks.useState false
   let todoId = input.todoId
-  maybeTodo /\ ctx <- useStore \state -> lookup todoId state.todosById
+  maybeTodo /\ ctx <- useStore \state -> lookup todoId state.todosById -- sometimes state is undefined?
 
   let
     { title, completed } = case maybeTodo of

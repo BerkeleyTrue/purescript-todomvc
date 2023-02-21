@@ -31,18 +31,19 @@ data Action
   | SetFilter String
 
 getId :: Store -> Int
-getId store = store.currentId
+getId store = store.currentId + 1
 
 reducer :: Store -> Action -> Store
 reducer store = case _ of
   AddTodo title ->
     store
       { todos = snoc store.todos newId
-      , todosById = union store.todosById $ singleton newId { id: newId, title: title, completed: false }
+      , todosById = union store.todosById $ singleton newId newTodo
       , currentId = newId
       }
     where
     newId = getId store
+    newTodo = { id: newId, title: title, completed: false }
 
   UpdateTodo id title ->
     store
@@ -72,7 +73,7 @@ createUseStore = makeStore' "todos" reducer
 
 initStore :: Store
 initStore =
-  { currentId: 1
+  { currentId: 2
   , todos: [ 1, 2 ]
   , todosById: fromFoldable
       [ (Tuple 1 { id: 1, title: "Learn Halogen", completed: true })
