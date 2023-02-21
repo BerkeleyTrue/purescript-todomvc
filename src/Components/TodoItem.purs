@@ -58,6 +58,7 @@ todoItem = Hooks.component \_ input -> Hooks.do
       [ HH.div [ HP.classes [ HH.ClassName "view" ] ]
           [ HH.input
               [ HP.classes [ HH.ClassName "toggle" ]
+              , HP.id "toggle-all"
               , HP.type_ HP.InputCheckbox
               , HP.checked completed
               , HE.onClick handleCheckbox

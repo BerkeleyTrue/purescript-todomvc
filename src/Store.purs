@@ -3,7 +3,7 @@ module Store where
 import Prelude
 
 import Data.Array (filter, snoc)
-import Data.Map (Map, fromFoldable, singleton, union, update)
+import Data.Map (Map, fromFoldable, mapMaybe, singleton, union, update)
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Effect.Class (class MonadEffect)
@@ -27,6 +27,7 @@ data Action
   | UpdateTodo Int String
   | CompleteTodo Int
   | ToggleTodo Int
+  | ToggleTodos Boolean
   | DeleteTodo Int
   | SetFilter String
 
@@ -63,6 +64,11 @@ reducer store = case _ of
   ToggleTodo id ->
     store
       { todosById = update (\todo -> Just todo { completed = not todo.completed }) id store.todosById
+      }
+
+  ToggleTodos toState ->
+    store
+      { todosById = mapMaybe(\todo -> Just $ todo { completed = toState }) store.todosById
       }
 
   SetFilter filter ->

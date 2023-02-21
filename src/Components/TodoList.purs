@@ -4,7 +4,7 @@ import Prelude
 
 import Components.TodoItem (todoItem)
 import Data.FunctorWithIndex (mapWithIndex)
-import Data.List (all, filter, length)
+import Data.List (List(..), all, filter, length)
 import Data.Map (values)
 import Data.Tuple.Nested ((/\))
 import Effect.Class (class MonadEffect)
@@ -27,9 +27,11 @@ todoList = Hooks.component \_ _ -> Hooks.do
   newVal /\ newValId <- useState ""
   filter' /\ ctx <- useStore \s -> s.filter
   (todos /\ byId) /\ _ <- useStore \s -> (s.todos /\ s.todosById)
+  isAllSelected <- useIsAllSelected byId
   let
     left = length $ filter (not <<< _.completed) $ values byId
     onNewValChange = \val -> Hooks.modify_ newValId (const val)
+
     onAddNewTodo ev = case code ev of
       "Enter" ->
         do
@@ -42,7 +44,9 @@ todoList = Hooks.component \_ _ -> Hooks.do
           else pure unit
       _ -> pure unit
 
-  isAllSelected <- useIsAllSelected byId
+    handleToggleAll = \_ -> do
+      log $ "Toggling all todos: " <> show isAllSelected
+      ctx.dispatch $ ToggleTodos $ not isAllSelected
 
   Hooks.pure do
     HH.div [ HP.classes [ HH.ClassName "todoapp" ] ]
@@ -61,8 +65,10 @@ todoList = Hooks.component \_ _ -> Hooks.do
           [ HP.classes [ HH.ClassName "main" ] ]
           [ HH.input
               [ HP.classes [ HH.ClassName "toggle-all" ]
+              , HP.id "toggle-all"
               , HP.type_ HP.InputCheckbox
               , HP.checked isAllSelected
+              , HE.onClick handleToggleAll
               ]
           , HH.label [ HP.for "toggle-all" ] []
           , HH.ul
