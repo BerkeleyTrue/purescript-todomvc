@@ -3,7 +3,7 @@ module Store where
 import Prelude
 
 import Data.Array (filter, snoc)
-import Data.Map (Map, fromFoldable, mapMaybe, singleton, union, update)
+import Data.Map as Mp
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Effect.Class (class MonadEffect)
@@ -15,10 +15,17 @@ type Todo =
   , completed :: Boolean
   }
 
+data Filter
+  = All
+  | Active
+  | Completed
+
+derive instance eqFilter :: Eq Filter
+
 type Store =
   { todos :: Array Int
-  , todosById :: Map Int Todo
-  , filter :: String
+  , todosById :: Mp.Map Int Todo
+  , filter :: Filter
   , currentId :: Int
   }
 
@@ -29,7 +36,7 @@ data Action
   | ToggleTodo Int
   | ToggleTodos Boolean
   | DeleteTodo Int
-  | SetFilter String
+  | SetFilter Filter
 
 getId :: Store -> Int
 getId store = store.currentId + 1
@@ -39,7 +46,7 @@ reducer store = case _ of
   AddTodo title ->
     store
       { todos = snoc store.todos newId
-      , todosById = union store.todosById $ singleton newId newTodo
+      , todosById = Mp.union store.todosById $ Mp.singleton newId newTodo
       , currentId = newId
       }
     where
@@ -48,27 +55,27 @@ reducer store = case _ of
 
   UpdateTodo id title ->
     store
-      { todosById = update (\todo -> Just todo { title = title }) id store.todosById }
+      { todosById = Mp.update (\todo -> Just todo { title = title }) id store.todosById }
 
   DeleteTodo id ->
     store
       { todos = filter (\todo -> todo /= id) store.todos
-      , todosById = update (\_ -> Nothing) id store.todosById
+      , todosById = Mp.update (\_ -> Nothing) id store.todosById
       }
 
   CompleteTodo id ->
     store
-      { todosById = update (\todo -> Just todo { completed = true }) id store.todosById
+      { todosById = Mp.update (\todo -> Just todo { completed = true }) id store.todosById
       }
 
   ToggleTodo id ->
     store
-      { todosById = update (\todo -> Just todo { completed = not todo.completed }) id store.todosById
+      { todosById = Mp.update (\todo -> Just todo { completed = not todo.completed }) id store.todosById
       }
 
   ToggleTodos toState ->
     store
-      { todosById = mapMaybe(\todo -> Just $ todo { completed = toState }) store.todosById
+      { todosById = Mp.mapMaybe (\todo -> Just $ todo { completed = toState }) store.todosById
       }
 
   SetFilter filter ->
@@ -81,11 +88,11 @@ initStore :: Store
 initStore =
   { currentId: 2
   , todos: [ 1, 2 ]
-  , todosById: fromFoldable
+  , todosById: Mp.fromFoldable
       [ (Tuple 1 { id: 1, title: "Learn Halogen", completed: true })
       , (Tuple 2 { id: 2, title: "Learn Halogen Hooks", completed: false })
       ]
-  , filter: ""
+  , filter: All
   }
 
 useStore :: forall part m. MonadEffect m => Eq part => UseHelixHook Store Action part m
