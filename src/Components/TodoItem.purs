@@ -53,7 +53,7 @@ todoItem = Hooks.component \_ input -> Hooks.do
             , guard isEditing $> HH.ClassName "editing"
             , guard completed $> HH.ClassName "completed"
             ]
-      , HE.onClick handleViewClick
+      , HE.onDoubleClick handleViewClick
       ]
       [ HH.div [ HP.classes [ HH.ClassName "view" ] ]
           [ HH.input
